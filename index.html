@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>קריאות ריכוז</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1EC; --surface:#FFFFFF; --ink:#16231D; --muted:#5B6A62; --line:#CBD3CC;
+  --brand:#0E5A4A; --brand-ink:#FFFFFF;
+  --new:#B3261E; --prog:#8F5400; --done:#1F6E43;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101714; --surface:#18221D; --ink:#E6EEE9; --muted:#9AAAA1; --line:#2C3A33;
+    --brand:#4DBB9F; --brand-ink:#08241C; --new:#FF8A80; --prog:#F2B35A; --done:#6FD09A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101714; --surface:#18221D; --ink:#E6EEE9; --muted:#9AAAA1; --line:#2C3A33;
+  --brand:#4DBB9F; --brand-ink:#08241C; --new:#FF8A80; --prog:#F2B35A; --done:#6FD09A;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 10px;border-bottom:2px solid var(--ink);margin-bottom:20px}
+.brand{font-weight:800;font-size:1.25rem;letter-spacing:-.01em}
+.who{color:var(--muted);font-size:.95rem;display:flex;gap:12px;align-items:center}
+h1,h2,h3{margin:0 0 .5em;line-height:1.2}
+h2{font-size:1.2rem;font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border:1.5px solid var(--ink);background:transparent;border-radius:6px;cursor:pointer;font-weight:600;text-decoration:none}
+.btn:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.sm{min-height:36px;padding:0 12px;font-size:.9rem}
+.btn.danger{color:var(--new);border-color:var(--new)}
+.btn.link{border:none;min-height:auto;padding:0;text-decoration:underline;font-weight:500;color:var(--muted)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+label{display:block;font-weight:600;margin-bottom:4px}
+input[type=text],input[type=password],input[type=tel],select,textarea{width:100%;min-height:44px;padding:8px 12px;border:1.5px solid var(--line);background:var(--surface);border-radius:6px}
+textarea{min-height:130px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+.field{margin-bottom:16px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.hint{min-height:1.5em;font-size:.95rem;color:var(--muted);margin-top:6px}
+.slip{background:var(--surface);border:1.5px solid var(--ink);border-radius:8px;overflow:hidden}
+.slip-head{background:var(--ink);color:var(--bg);padding:10px 18px;font-weight:700}
+.slip-body{padding:20px 18px}
+.bignum{font-size:2.6rem;font-weight:800;text-align:center;letter-spacing:.06em;font-variant-numeric:tabular-nums;min-height:72px !important;border-width:2px !important}
+.done-card{text-align:center;padding:28px 18px}
+.ticket-no{font-size:3rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--brand)}
+.tabs{display:flex;gap:4px;border-bottom:1.5px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tab{padding:10px 16px;border:none;background:none;cursor:pointer;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--brand)}
+.counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.count{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;border-inline-start:6px solid var(--line)}
+.count b{display:block;font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.count.s-new{border-inline-start-color:var(--new)}
+.count.s-progress{border-inline-start-color:var(--prog)}
+.count.s-done{border-inline-start-color:var(--done)}
+.count.s-un{border-inline-start-color:var(--ink)}
+.tickets{display:grid;gap:12px}
+.ticket{background:var(--surface);border:1px solid var(--line);border-inline-start:6px solid var(--line);border-radius:6px;padding:14px 16px}
+.ticket.s-new{border-inline-start-color:var(--new)}
+.ticket.s-progress{border-inline-start-color:var(--prog)}
+.ticket.s-done{border-inline-start-color:var(--done)}
+.ticket.unassigned{outline:2px dashed var(--ink);outline-offset:-2px}
+.t-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.t-no{font-weight:800;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.t-content{white-space:pre-wrap;margin:8px 0;padding:10px 12px;background:color-mix(in srgb,var(--ink) 5%,var(--surface));border-radius:4px}
+.t-info{display:grid;gap:2px;color:var(--muted);font-size:.95rem}
+.t-info b{color:var(--ink);font-weight:600}
+.t-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.t-actions select{width:auto;min-width:140px;min-height:36px;padding:4px 10px}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.85rem;font-weight:700;border:1.5px solid currentColor}
+.badge.s-new{color:var(--new);background:color-mix(in srgb,var(--new) 12%,var(--surface))}
+.badge.s-progress{color:var(--prog);background:color-mix(in srgb,var(--prog) 14%,var(--surface))}
+.badge.s-done{color:var(--done);background:color-mix(in srgb,var(--done) 12%,var(--surface))}
+details summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+details ul{margin:6px 0 0;padding-inline-start:20px;font-size:.9rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:16px}
+.list-item{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.list-item:first-child{border-top:none}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.chip{background:color-mix(in srgb,var(--brand) 14%,var(--surface));padding:1px 8px;border-radius:4px;font-size:.85rem;font-variant-numeric:tabular-nums}
+.chip.off{background:color-mix(in srgb,var(--ink) 8%,var(--surface));color:var(--muted)}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.tbl{width:100%;border-collapse:collapse;font-size:.9rem}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}.tbl th{font-weight:700;background:color-mix(in srgb,var(--ink) 5%,var(--surface))}
+.empty{text-align:center;color:var(--muted);padding:32px 12px;border:1.5px dashed var(--line);border-radius:6px}
+.err{color:var(--new);font-weight:600;min-height:1.5em;margin:0 0 8px}
+footer.foot{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);display:flex;gap:16px;justify-content:center}
+#toast{position:fixed;inset-inline:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:480px;margin-inline:auto;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:6px;font-weight:600;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+#toast.show{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="muted">טוען…</p></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+/* =====================================================================
+   הגדרות – למלא אחרי יצירת הפרויקט ב-Supabase (ראה SETUP.md)
+   ===================================================================== */
+const SUPABASE_URL = 'https://colvolpbiequawgeyaml.supabase.co';   // למשל: https://abcdefgh.supabase.co
+const SUPABASE_KEY = 'sb_publishable_TpZ4qgEHZ3ii1cLjHy76gQ_E8Gzg3IS';   // ה-anon key / publishable key (מותר שיהיה גלוי)
+// שליחים נכנסים עם "שם משתמש" פשוט. מאחורי הקלעים נוצר להם אימייל = שם משתמש@הדומיין הזה.
+// נדרש דומיין אמיתי (עם שרתי מייל). לא נשלחים אליו מיילים בפועל.
+const EMAIL_DOMAIN = 'gmail.com';
+</script>
+<script>
+(function(){
+'use strict';
+
+/* ---------- Helpers ---------- */
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LBL = {new:'פתוחה', progress:'בטיפול', done:'הושלמה'};
+const fmt = ts => new Date(ts).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'});
+const normNum = v => { const s = String(v||'').trim(); return /^\d{1,8}$/.test(s) ? String(Number(s)) : null; };
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>el.classList.remove('show'), 3800);
+}
+
+const cfgOk = !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
+const sb = cfgOk ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+/* ---------- State ---------- */
+let me = null;                         // {role:'admin'} | {role:'courier', courier:{...}}
+let D = {couriers:[], centers:[], tickets:[]};
+let lastTicket = null;
+let aTab = 'overview', cTab = 'active';
+let F = {courier:'', center:'', status:''};
+let editCenter = null, formErr = '';
+let imp = null;                        // תצוגה מקדימה של ייבוא ריכוזים
+
+const courierById = id => D.couriers.find(c => c.id === id);
+const findCenter = num => D.centers.find(c => c.num === num);
+const countsFor = l => ({new:l.filter(t=>t.status==='new').length, progress:l.filter(t=>t.status==='progress').length, done:l.filter(t=>t.status==='done').length});
+
+async function run(p){
+  const r = await p;
+  if(r.error){ toast('שגיאה: ' + r.error.message); throw r.error; }
+  return r.data;
+}
+
+/* ---------- Auth / data ---------- */
+async function loadMe(){
+  me = null;
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session) return;
+  const uid = session.user.id;
+  const a = await sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle();
+  if(a.data){ me = {role:'admin'}; return; }
+  const c = await sb.from('couriers').select('*').eq('user_id', uid).maybeSingle();
+  if(c.data && c.data.active){ me = {role:'courier', courier:c.data}; return; }
+  await sb.auth.signOut();
+}
+async function loadData(){
+  if(!me) return;
+  if(me.role === 'admin'){
+    const [c, z, t] = await Promise.all([
+      sb.from('couriers').select('*').order('name'),
+      sb.from('centers').select('*').order('num'),
+      sb.from('tickets').select('*').order('created_at',{ascending:false}).limit(1000)
+    ]);
+    [c,z,t].forEach(r => { if(r.error) toast('שגיאה בטעינה: ' + r.error.message); });
+    D = {couriers:c.data||[], centers:(z.data||[]).sort((a,b)=>a.num-b.num), tickets:t.data||[]};
+  } else {
+    const t = await sb.from('tickets').select('*').order('created_at',{ascending:false}).limit(1000);
+    if(t.error) toast('שגיאה בטעינה: ' + t.error.message);
+    D = {couriers:[me.courier], centers:[], tickets:t.data||[]};
+  }
+}
+async function reload(){ await loadData(); render(); }
+
+/* ---------- Realtime ---------- */
+let channel = null, rtTimer;
+function startRealtime(){
+  if(channel || !me) return;
+  channel = sb.channel('tickets-live').on('postgres_changes',{event:'*',schema:'public',table:'tickets'}, p => {
+    if(p.eventType === 'INSERT') toast('קריאה חדשה התקבלה – ריכוז ' + p.new.center_num);
+    clearTimeout(rtTimer); rtTimer = setTimeout(softReload, 400);
+  }).subscribe();
+}
+function stopRealtime(){ if(channel){ sb.removeChannel(channel); channel = null; } }
+async function softReload(){
+  await loadData();
+  const ae = document.activeElement;
+  if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+  render();
+}
+
+/* ---------- Shared UI ---------- */
+function topbar(who, logout){
+  return `<header class="top"><div class="brand">קריאות ריכוז</div>
+  <div class="who">${who ? '<span>'+esc(who)+'</span>' : ''}${logout ? '<button class="btn sm" data-act="logout">יציאה</button>' : ''}</div></header>`;
+}
+function footer(){ return `<footer class="foot"><a class="btn link" href="#/login">כניסת שליחים ומנהל</a></footer>`; }
+
+function ticketCard(t, mode){
+  const s = t.snapshot || {};
+  const courier = t.courier_id ? courierById(t.courier_id) : null;
+  const info = [
+    `<div>ריכוז <b>${esc(t.center_num)}</b>${s.address ? ' · ' + esc(s.address) : ''}</div>`,
+    s.secretary ? `<div>מזכיר מתכלל: <b>${esc(s.secretary)}</b>${s.phone ? ' · <span dir="ltr">'+esc(s.phone)+'</span>' : ''}</div>` : '',
+    mode==='admin' ? `<div>שליח: <b>${courier ? esc(courier.name) : 'ללא שיוך'}</b></div>` : ''
+  ].join('');
+  let actions = '';
+  if(mode === 'courier'){
+    if(s.phone) actions += `<a class="btn sm" href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">התקשר למזכיר</a>`;
+    if(t.status === 'new') actions += `<button class="btn primary sm" data-act="advance" data-id="${t.id}" data-to="progress">קיבלתי</button>`;
+    if(t.status === 'progress') actions += `<button class="btn primary sm" data-act="advance" data-id="${t.id}" data-to="done">הושלמה</button>`;
+  } else {
+    actions += `<select aria-label="סטטוס" data-chg="status" data-id="${t.id}">${['new','progress','done'].map(k=>`<option value="${k}" ${t.status===k?'selected':''}>${LBL[k]}</option>`).join('')}</select>`;
+    actions += `<select aria-label="שליח" data-chg="reassign" data-id="${t.id}"><option value="">ללא שיוך</option>${D.couriers.filter(c=>c.active||c.id===t.courier_id).map(c=>`<option value="${c.id}" ${t.courier_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`;
+  }
+  return `<article class="ticket s-${t.status} ${mode==='admin'&&!t.courier_id&&t.status!=='done'?'unassigned':''}">
+    <div class="t-head"><span class="t-no">קריאה #${t.id}</span><span><span class="badge s-${t.status}">${LBL[t.status]}</span> <span class="muted small">${fmt(t.created_at)}</span></span></div>
+    <div class="t-info">${info}</div>
+    <div class="t-content">${esc(t.content)}</div>
+    ${actions ? `<div class="t-actions">${actions}</div>` : ''}
+    <details style="margin-top:10px"><summary>היסטוריה</summary><ul>${(t.history||[]).map(h=>`<li>${esc(h.text)} · ${fmt(h.at)}</li>`).join('')}</ul></details>
+  </article>`;
+}
+
+/* ---------- Views ---------- */
+function viewSetup(){
+  return topbar() + `<div class="panel"><h2>האפליקציה עדיין לא מחוברת לבסיס נתונים</h2>
+    <p>יש למלא את <b>SUPABASE_URL</b> ו-<b>SUPABASE_KEY</b> בראש הקובץ index.html. ההוראות מפורטות בקובץ SETUP.md.</p></div>`;
+}
+function viewPublic(){
+  if(lastTicket){
+    const t = lastTicket;
+    return topbar() + `<div class="slip"><div class="slip-head">הקריאה נפתחה</div><div class="done-card">
+      <div class="muted">מספר קריאה</div><div class="ticket-no">#${esc(t.id)}</div>
+      <p>הקריאה לריכוז <b>${esc(t.num)}</b> ${t.assigned ? 'נשלחה לשליח האחראי.' : 'התקבלה ותועבר לשיוך על ידי המנהל.'}</p>
+      <button class="btn primary" data-act="again">פתיחת קריאה נוספת</button></div></div>` + footer();
+  }
+  return topbar() + `<form id="f-open" class="slip" novalidate>
+    <div class="slip-head">פתיחת קריאה</div>
+    <div class="slip-body">
+      <div class="field"><label for="num">מספר ריכוז</label>
+        <input id="num" class="bignum" type="text" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="000">
+        <div class="hint" id="num-hint" aria-live="polite"></div></div>
+      <div class="field"><label for="content">תוכן הקריאה</label>
+        <textarea id="content" maxlength="2000" placeholder="מה צריך לטפל?"></textarea></div>
+      <p class="err" id="open-err" role="alert"></p>
+      <button class="btn primary" id="open-btn" type="submit" style="width:100%">פתיחת קריאה</button>
+    </div></form>` + footer();
+}
+function viewLogin(){
+  return topbar() + `<form id="f-login" class="slip" style="max-width:420px;margin:0 auto" novalidate>
+    <div class="slip-head">כניסה</div><div class="slip-body">
+      <div class="field"><label for="lu">שם משתמש</label><input id="lu" type="text" autocomplete="username" autocapitalize="off" dir="ltr" style="text-align:right"></div>
+      <div class="field"><label for="lp">סיסמה</label><input id="lp" type="password" autocomplete="current-password"></div>
+      <p class="err" id="login-err" role="alert"></p>
+      <button class="btn primary" id="login-btn" type="submit" style="width:100%">כניסה</button>
+      <p class="small muted" style="margin-bottom:0">מנהל נכנס עם כתובת האימייל שלו.</p>
+    </div></form>
+    <footer class="foot"><a class="btn link" href="#/">חזרה לפתיחת קריאה</a></footer>`;
+}
+function viewCourier(){
+  const c = me.courier;
+  const mine = D.tickets;
+  const n = countsFor(mine);
+  const active = mine.filter(t => t.status !== 'done');
+  const hist = mine.filter(t => t.status === 'done');
+  const list = cTab === 'active' ? active : hist;
+  return topbar(c.name, true) + `
+  <div class="counts">
+    <div class="count s-new"><b>${n.new}</b>חדשות</div>
+    <div class="count s-progress"><b>${n.progress}</b>בטיפול</div>
+    <div class="count s-done"><b>${n.done}</b>הושלמו</div>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="${cTab==='active'}" data-act="ctab" data-v="active">פעילות (${active.length})</button>
+    <button class="tab" role="tab" aria-selected="${cTab==='hist'}" data-act="ctab" data-v="hist">היסטוריה (${hist.length})</button>
+  </div>
+  <div class="tickets">${list.length ? list.map(t=>ticketCard(t,'courier')).join('') : `<div class="empty">${cTab==='active' ? 'אין קריאות פעילות. קריאה חדשה תופיע כאן.' : 'עדיין אין קריאות שהושלמו.'}</div>`}</div>`;
+}
+
+function viewAdmin(){
+  const tabs = [['overview','סקירה'],['tickets','קריאות'],['centers','ריכוזים'],['couriers','שליחים']];
+  const unassigned = D.tickets.filter(t=>!t.courier_id && t.status!=='done').length;
+  return topbar('מנהל', true) + `<div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="tab" role="tab" aria-selected="${aTab===k}" data-act="tab" data-v="${k}">${l}${k==='tickets'&&unassigned?` (${unassigned} ללא שיוך)`:''}</button>`).join('')}</div>` +
+    ({overview:adminOverview, tickets:adminTickets, centers:adminCenters, couriers:adminCouriers}[aTab])();
+}
+function adminOverview(){
+  const n = countsFor(D.tickets);
+  const un = D.tickets.filter(t=>!t.courier_id && t.status!=='done').length;
+  const per = D.couriers.map(c => { const k = countsFor(D.tickets.filter(t=>t.courier_id===c.id)); return `<div class="list-item"><div><b>${esc(c.name)}</b>${c.active?'':' <span class="chip off">לא פעיל</span>'}</div><div class="muted small">${k.new} פתוחות · ${k.progress} בטיפול · ${k.done} הושלמו</div></div>`; }).join('');
+  return `<div class="counts">
+    <div class="count s-new"><b>${n.new}</b>פתוחות</div>
+    <div class="count s-progress"><b>${n.progress}</b>בטיפול</div>
+    <div class="count s-done"><b>${n.done}</b>הושלמו</div>
+    <div class="count s-un"><b>${un}</b>ללא שיוך</div>
+    <div class="count"><b>${D.couriers.length}</b>שליחים</div>
+  </div>
+  ${D.couriers.length ? `<div class="panel"><h2>עומס לפי שליח</h2>${per}</div>` : `<div class="empty">עוד לא הוגדרו שליחים. אפשר להתחיל מלשונית "שליחים".</div>`}`;
+}
+function filteredTickets(){
+  return D.tickets.filter(t =>
+    (!F.status || t.status===F.status) &&
+    (!F.center || t.center_num === F.center.trim()) &&
+    (!F.courier || (F.courier==='none' ? !t.courier_id : t.courier_id===F.courier)));
+}
+function ticketListHtml(){
+  const l = filteredTickets();
+  return l.length ? l.map(t=>ticketCard(t,'admin')).join('') : '<div class="empty">אין קריאות שמתאימות לסינון.</div>';
+}
+function adminTickets(){
+  return `<div class="filters">
+    <div><label for="f-courier">שליח</label><select id="f-courier" data-filter="courier"><option value="">הכל</option><option value="none" ${F.courier==='none'?'selected':''}>ללא שיוך</option>${D.couriers.map(c=>`<option value="${c.id}" ${F.courier===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+    <div><label for="f-center">מספר ריכוז</label><input id="f-center" type="text" inputmode="numeric" data-filter="center" value="${esc(F.center)}"></div>
+    <div><label for="f-status">סטטוס</label><select id="f-status" data-filter="status"><option value="">הכל</option>${['new','progress','done'].map(k=>`<option value="${k}" ${F.status===k?'selected':''}>${LBL[k]}</option>`).join('')}</select></div>
+  </div><div class="tickets" id="tlist">${ticketListHtml()}</div>`;
+}
+function adminCenters(){
+  const e = editCenter ? findCenter(editCenter) : null;
+  const rows = D.centers.map(c => {
+    const cr = c.courier_id ? courierById(c.courier_id) : null;
+    return `<div class="list-item"><div><b>ריכוז ${esc(c.num)}</b> <span class="muted">${esc(c.address)||'ללא כתובת'}</span>
+      <div class="muted small">${c.secretary ? esc(c.secretary)+' · ' : ''}${c.phone ? '<span dir="ltr">'+esc(c.phone)+'</span> · ' : ''}שליח: ${cr ? esc(cr.name) : '<b>לא מוגדר</b>'}</div></div>
+      <div class="t-actions" style="margin:0"><button class="btn sm" data-act="cedit" data-num="${esc(c.num)}">עריכה</button><button class="btn sm danger" data-act="cdel" data-num="${esc(c.num)}">מחיקה</button></div></div>`;
+  }).join('');
+  return importPanel() + `<form id="f-center" class="panel" novalidate>
+    <h2>${e ? 'עריכת ריכוז '+esc(e.num) : 'הוספת ריכוז'}</h2>
+    <div class="row">
+      <div class="field"><label for="c-num">מספר ריכוז</label><input id="c-num" type="text" inputmode="numeric" value="${e?esc(e.num):''}" ${e?'readonly':''}></div>
+      <div class="field"><label for="c-addr">כתובת</label><input id="c-addr" type="text" value="${e?esc(e.address):''}"></div>
+      <div class="field"><label for="c-sec">מזכיר מתכלל</label><input id="c-sec" type="text" value="${e?esc(e.secretary):''}"></div>
+      <div class="field"><label for="c-phone">נייד מזכיר</label><input id="c-phone" type="tel" dir="ltr" style="text-align:right" value="${e?esc(e.phone):''}"></div>
+      <div class="field"><label for="c-courier">שליח אחראי</label><select id="c-courier"><option value="">ללא</option>${D.couriers.map(c=>`<option value="${c.id}" ${e&&e.courier_id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+    </div>
+    <p class="err" role="alert">${esc(formErr)}</p>
+    <div class="t-actions" style="margin-top:0"><button class="btn primary" type="submit">${e?'שמירת שינויים':'הוספת ריכוז'}</button>${e?'<button class="btn" type="button" data-act="cancel-edit">ביטול</button>':''}</div>
+  </form>
+  <div class="panel"><h2>ריכוזים (${D.centers.length})</h2>${rows || '<div class="empty">עוד לא הוגדרו ריכוזים.</div>'}</div>`;
+}
+function adminCouriers(){
+  const rows = D.couriers.map(c => {
+    const nums = D.centers.filter(x=>x.courier_id===c.id).map(x=>x.num);
+    return `<div class="list-item" style="display:block">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div><b>${esc(c.name)}</b> <span class="muted small" dir="ltr">${esc(c.username)}</span> ${c.active?'':'<span class="chip off">לא פעיל</span>'}
+          <div class="chips">${nums.length ? nums.map(n=>`<span class="chip">${esc(n)}</span>`).join('') : '<span class="muted small">אין ריכוזים מוגדרים</span>'}</div></div>
+        <div class="t-actions" style="margin:0"><button class="btn sm" data-act="uactive" data-id="${c.id}">${c.active?'השבתה':'הפעלה'}</button><button class="btn sm danger" data-act="udel" data-id="${c.id}">מחיקה</button></div>
+      </div>
+      <div class="t-actions"><input type="text" id="as-${c.id}" placeholder="הוספת ריכוזים: 101, 102, 301-350" style="max-width:320px"><button class="btn sm" data-act="uassign" data-id="${c.id}">שיוך ריכוזים</button></div>
+    </div>`;
+  }).join('');
+  return `<form id="f-courier" class="panel" novalidate>
+    <h2>הוספת שליח</h2>
+    <div class="row">
+      <div class="field"><label for="u-name">שם</label><input id="u-name" type="text"></div>
+      <div class="field"><label for="u-user">שם משתמש (אותיות באנגלית/ספרות)</label><input id="u-user" type="text" autocapitalize="off" autocomplete="off" dir="ltr" style="text-align:right"></div>
+      <div class="field"><label for="u-pass">סיסמה (לפחות 6 תווים)</label><input id="u-pass" type="text" autocomplete="off" dir="ltr" style="text-align:right"></div>
+    </div>
+    <p class="err" role="alert">${esc(formErr)}</p>
+    <button class="btn primary" id="u-btn" type="submit">הוספת שליח</button>
+  </form>
+  <div class="panel"><h2>שליחים (${D.couriers.length})</h2>${rows || '<div class="empty">עוד לא הוגדרו שליחים.</div>'}</div>`;
+}
+
+/* ---------- Router ---------- */
+function render(){
+  if(!cfgOk){ $app.innerHTML = viewSetup(); return; }
+  const h = location.hash || '#/';
+  if(h.startsWith('#/admin') && me && me.role==='admin') $app.innerHTML = viewAdmin();
+  else if(h.startsWith('#/courier') && me && me.role==='courier') $app.innerHTML = viewCourier();
+  else if(h.startsWith('#/login')) $app.innerHTML = viewLogin();
+  else if(!h.startsWith('#/admin') && !h.startsWith('#/courier')) $app.innerHTML = viewPublic();
+}
+async function go(){
+  if(!cfgOk){ render(); return; }
+  const h = location.hash || '#/';
+  const prot = h.startsWith('#/admin') || h.startsWith('#/courier');
+  if(h.startsWith('#/login') && me){ location.hash = me.role==='admin' ? '#/admin' : '#/courier'; return; }
+  if(prot){
+    if(!me){ location.hash = '#/login'; return; }
+    if(h.startsWith('#/admin') && me.role!=='admin'){ location.hash = '#/courier'; return; }
+    if(h.startsWith('#/courier') && me.role!=='courier'){ location.hash = '#/admin'; return; }
+    startRealtime();
+    await reload();
+    return;
+  }
+  render();
+}
+window.addEventListener('hashchange', () => { formErr=''; go(); window.scrollTo(0,0); });
+
+
+/* IMPORT-START */
+const normH = s => String(s||'').toLowerCase().replace(/[\s"'״׳.\-_:]/g,'');
+function detectCol(h){
+  const x = normH(h); if(!x) return null;
+  if(/שליח|courier|driver/.test(x)) return 'courier';
+  if(/כתובת|address|רחוב/.test(x)) return 'address';
+  if(/טלפון|נייד|פלאפון|סלולר|phone|mobile|tel|cell/.test(x)) return 'phone';
+  if(/מזכיר|secretary|שם/.test(x)) return 'secretary';
+  if(/ריכוז|מספר|מס|num|center|id/.test(x)) return 'num';
+  return null;
+}
+function normPhone(v){
+  const raw = String(v||'').trim(); if(!raw) return '';
+  let d = raw.replace(/\D/g,'');
+  if(/^5\d{8}$/.test(d)) d = '0' + d;               // Excel מוחק אפס מוביל
+  if(/^05\d{8}$/.test(d)) return d.slice(0,3) + '-' + d.slice(3);
+  return raw;
+}
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, '');
+  const first = text.split(/\r?\n/)[0] || '';
+  const delim = [',',';','\t'].map(d => [d, first.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const rows = []; let row = [], cur = '', q = false;
+  for(let i=0;i<text.length;i++){
+    const ch = text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else q=false; } else cur+=ch; }
+    else if(ch==='"') q = true;
+    else if(ch===delim){ row.push(cur); cur=''; }
+    else if(ch==='\n' || ch==='\r'){ if(ch==='\r' && text[i+1]==='\n') i++; row.push(cur); rows.push(row); row=[]; cur=''; }
+    else cur += ch;
+  }
+  if(cur!=='' || row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+function buildImport(grid0){
+  const grid = grid0.map((r,i)=>({r, line:i+1})).filter(x => x.r.some(c => String(c).trim() !== ''));
+  const map = {}; let start = 0;
+  if(grid.length){
+    const m = {}; grid[0].r.forEach((h,i)=>{ const k = detectCol(h); if(k && !(k in m)) m[k] = i; });
+    if('num' in m){ Object.assign(map, m); start = 1; }
+  }
+  if(start === 0){            // אין שורת כותרות מזוהה: סדר ברירת מחדל מספר, מזכיר, טלפון, כתובת
+    const width = Math.max(0, ...grid.map(x => x.r.length));
+    Object.entries({num:0, secretary:1, phone:2, address:3}).forEach(([k,i]) => { if(i < width) map[k] = i; });
+  }
+  const has = {secretary:'secretary' in map, phone:'phone' in map, address:'address' in map, courier:'courier' in map};
+  const unmatched = new Set();
+  const byNum = new Map(), skipped = []; let dupes = 0;
+  grid.slice(start).forEach(({r, line}) => {
+    const mm = String(r[map.num] ?? '').match(/\d+/);
+    const num = mm ? normNum(mm[0]) : null;
+    if(!num){ skipped.push(line); return; }
+    if(byNum.has(num)) dupes++;
+    byNum.set(num, {
+      num,
+      secretary: has.secretary ? String(r[map.secretary] ?? '').trim() : '',
+      phone:     has.phone ? normPhone(r[map.phone]) : '',
+      address:   has.address ? String(r[map.address] ?? '').trim() : '',
+      courierId: (() => {
+        if(!has.courier) return null;
+        const raw = String(r[map.courier] ?? '').trim(); if(!raw) return null;
+        const k = normH(raw);
+        const c = D.couriers.find(x => normH(x.name) === k || normH(x.username) === k);
+        if(!c){ unmatched.add(raw); return null; }
+        return c.id;
+      })()
+    });
+  });
+  const rows = [...byNum.values()].sort((a,b)=>a.num-b.num);
+  const updCount = rows.filter(r => findCenter(r.num)).length;
+  return {rows, has, skipped, dupes, updCount, newCount: rows.length - updCount, unmatched:[...unmatched]};
+}
+/* IMPORT-END */
+async function handleImport(file){
+  if(!file) return;
+  try{
+    let grid;
+    if(/\.(xlsx|xls)$/i.test(file.name)){
+      if(!window.XLSX){ toast('ספריית Excel לא נטענה. נסה קובץ CSV או רענן את הדף.'); return; }
+      const wb = window.XLSX.read(await file.arrayBuffer(), {type:'array'});
+      grid = window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:false, defval:''});
+    } else {
+      const buf = await file.arrayBuffer(); let text;
+      try{ text = new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+      catch(e){ text = new TextDecoder('windows-1255').decode(buf); }   // CSV עברי ישן מ-Excel
+      grid = parseCSV(text);
+    }
+    imp = buildImport(grid);
+    if(!imp.rows.length){ imp = null; toast('לא נמצאו שורות תקינות בקובץ'); }
+    render();
+  }catch(err){ console.error(err); toast('לא ניתן לקרוא את הקובץ'); }
+}
+function importPanel(){
+  const head = `<div class="panel"><h2>ייבוא ריכוזים מקובץ</h2>
+    <p class="small muted">קובץ Excel (xlsx) או CSV, כשהשורה הראשונה היא כותרות: מספר ריכוז, שם מזכיר מתכלל, נייד מזכיר, כתובת ושליח (לא חובה; לפי השם או שם המשתמש של השליח). ריכוז שכבר קיים יתעדכן; שליח משתנה רק אם צוין בקובץ.</p>
+    <div class="t-actions" style="margin-top:0"><input type="file" id="imp-file" accept=".xlsx,.xls,.csv,.txt" style="max-width:340px" aria-label="בחירת קובץ"><button class="btn sm" type="button" data-act="template">הורדת קובץ לדוגמה</button></div>`;
+  if(!imp) return head + '</div>';
+  const cols = ['מספר ריכוז'].concat(imp.has.secretary?['מזכיר']:[], imp.has.phone?['נייד']:[], imp.has.address?['כתובת']:[], imp.has.courier?['שליח']:[]).join(', ');
+  return head + `<div style="margin-top:16px"><p><b>${imp.rows.length}</b> ריכוזים בקובץ: ${imp.newCount} חדשים, ${imp.updCount} יתעדכנו.
+    <span class="muted small">עמודות שזוהו: ${esc(cols)}. עמודה שלא קיימת בקובץ לא תשנה נתונים קיימים.</span></p>
+    ${imp.dupes ? `<p class="small muted">${imp.dupes} מספרי ריכוז הופיעו יותר מפעם אחת; נלקחה השורה האחרונה.</p>` : ''}
+    ${imp.unmatched.length ? `<p class="err">שליחים שלא נמצאו במערכת (השיוך שלהם לא ישתנה): ${esc(imp.unmatched.join(', '))}. יש להוסיף אותם בלשונית "שליחים" ולייבא שוב.</p>` : ''}
+    ${imp.skipped.length ? `<p class="err">שורות שדולגו (אין מספר ריכוז תקין): ${esc(imp.skipped.slice(0,20).join(', '))}${imp.skipped.length>20?'…':''}</p>` : ''}
+    <div style="overflow-x:auto;max-height:340px;overflow-y:auto"><table class="tbl"><thead><tr><th>ריכוז</th><th>מזכיר</th><th>נייד</th><th>כתובת</th>${imp.has.courier?'<th>שליח</th>':''}<th></th></tr></thead><tbody>
+    ${imp.rows.map(r=>`<tr><td>${esc(r.num)}</td><td>${esc(r.secretary)}</td><td dir="ltr" style="text-align:right">${esc(r.phone)}</td><td>${esc(r.address)}</td>${imp.has.courier?`<td>${r.courierId?esc(courierById(r.courierId).name):''}</td>`:''}<td>${findCenter(r.num)?'עדכון':'<b>חדש</b>'}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="t-actions"><button class="btn primary" data-act="imp-confirm">ייבוא ${imp.rows.length} ריכוזים</button><button class="btn" data-act="imp-cancel">ביטול</button></div></div></div>`;
+}
+
+/* ---------- Admin write helpers ---------- */
+async function adminUpdateTicket(id, patch, text){
+  const t = D.tickets.find(x => x.id === id); if(!t) return;
+  const history = [...(t.history||[]), {text, at:new Date().toISOString()}];
+  await run(sb.from('tickets').update({...patch, history}).eq('id', id).select());
+}
+function parseNums(text){
+  const out = new Set();
+  String(text||'').split(/[,\s;]+/).filter(Boolean).forEach(part => {
+    const m = part.match(/^(\d+)\s*[-–—]\s*(\d+)$/);
+    if(m){ let a=Number(m[1]), b=Number(m[2]); if(a>b)[a,b]=[b,a]; for(let i=a;i<=b&&out.size<3000;i++) out.add(String(i)); }
+    else { const n = normNum(part); if(n) out.add(n); }
+  });
+  return [...out];
+}
+function usernameToEmail(u){ return u.includes('@') ? u : u + '@' + EMAIL_DOMAIN; }
+
+/* ---------- Events ---------- */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const a = b.dataset.act, id = b.dataset.id;
+  try{
+    switch(a){
+      case 'logout':
+        stopRealtime(); await sb.auth.signOut(); me = null; D = {couriers:[],centers:[],tickets:[]};
+        if(location.hash === '#/' || !location.hash) go(); else location.hash = '#/';
+        break;
+      case 'again': lastTicket = null; render(); break;
+      case 'tab': aTab = b.dataset.v; formErr=''; editCenter=null; render(); break;
+      case 'ctab': cTab = b.dataset.v; render(); break;
+      case 'advance':
+        b.disabled = true;
+        await run(sb.rpc('courier_set_status', {p_id:Number(id), p_status:b.dataset.to}));
+        await reload(); toast(b.dataset.to==='done' ? 'הקריאה הושלמה ועברה להיסטוריה' : 'הקריאה בטיפול');
+        break;
+      case 'template': {
+        const csv = '\uFEFF' + 'מספר ריכוז,שם מזכיר מתכלל,נייד מזכיר,כתובת\n101,ישראל ישראלי,050-1234567,"הרצל 15, נתניה"\n102,רונית בן דוד,052-7654321,"ויצמן 8, נתניה"\n';
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+        link.download = 'rikuzim-template.csv'; link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        break;
+      }
+      case 'imp-cancel': imp = null; render(); break;
+      case 'imp-confirm': {
+        b.disabled = true;
+        const rows = imp.rows.map(r => {
+          const o = {num:r.num}; ['secretary','phone','address'].forEach(k => { if(imp.has[k]) o[k] = r[k]; });
+          if(imp.has.courier){ const ex = findCenter(r.num); o.courier_id = r.courierId || (ex ? ex.courier_id : null); }
+          return o;
+        });
+        for(let i=0;i<rows.length;i+=500) await run(sb.from('centers').upsert(rows.slice(i,i+500), {onConflict:'num'}));
+        const assigned = imp.rows.filter(r => r.courierId).map(r => r.num);
+        if(assigned.length) await run(sb.rpc('admin_claim_orphans', {p_nums:assigned}));
+        const n = rows.length; imp = null; await reload(); toast('יובאו ' + n + ' ריכוזים');
+        break;
+      }
+      case 'cedit': editCenter = b.dataset.num; formErr=''; render(); window.scrollTo(0,0); break;
+      case 'cancel-edit': editCenter = null; formErr=''; render(); break;
+      case 'cdel':
+        if(confirm('למחוק את ריכוז ' + b.dataset.num + '? קריאות קיימות לא יימחקו.')){
+          await run(sb.from('centers').delete().eq('num', b.dataset.num)); await reload();
+        }
+        break;
+      case 'uactive': {
+        const c = courierById(id);
+        await run(sb.from('couriers').update({active:!c.active}).eq('id', id)); await reload();
+        break;
+      }
+      case 'udel': {
+        const c = courierById(id);
+        if(confirm('למחוק את השליח ' + c.name + '? הקריאות והריכוזים שלו יעברו ל"ללא שיוך".')){
+          await run(sb.from('couriers').delete().eq('id', id)); await reload();
+          toast('השליח נמחק. כדי לפנות את שם המשתמש, מחק אותו גם ב-Authentication → Users.');
+        }
+        break;
+      }
+      case 'uassign': {
+        const nums = parseNums(document.getElementById('as-' + id).value);
+        if(!nums.length){ toast('לא זוהו מספרי ריכוז. דוגמה: 101, 102, 301-350'); break; }
+        for(let i=0;i<nums.length;i+=500){
+          await run(sb.from('centers').upsert(nums.slice(i,i+500).map(n=>({num:n, courier_id:id})), {onConflict:'num'}));
+        }
+        await run(sb.rpc('admin_claim_orphans', {p_nums:nums}));
+        await reload(); toast('שויכו ' + nums.length + ' ריכוזים');
+        break;
+      }
+    }
+  }catch(err){ console.error(err); b.disabled = false; }
+});
+
+document.addEventListener('change', async e => {
+  const t = e.target;
+  if(t.id === 'imp-file'){ const f = t.files && t.files[0]; await handleImport(f); t.value = ''; return; }
+  try{
+    if(t.dataset.chg === 'status'){
+      await adminUpdateTicket(Number(t.dataset.id), {status:t.value}, 'סטטוס: ' + LBL[t.value] + ' (מנהל)'); await reload();
+    } else if(t.dataset.chg === 'reassign'){
+      const c = t.value ? courierById(t.value) : null;
+      await adminUpdateTicket(Number(t.dataset.id), {courier_id:t.value||null}, c ? 'הועברה ל' + c.name : 'שיוך הוסר'); await reload();
+    } else if(t.dataset.filter){
+      F[t.dataset.filter] = t.value; const l = document.getElementById('tlist'); if(l) l.innerHTML = ticketListHtml();
+    }
+  }catch(err){ console.error(err); }
+});
+
+let previewSeq = 0, previewTimer;
+document.addEventListener('input', e => {
+  const t = e.target;
+  if(t.dataset.filter === 'center'){ F.center = t.value; const l = document.getElementById('tlist'); if(l) l.innerHTML = ticketListHtml(); }
+  if(t.id === 'num'){
+    const hint = document.getElementById('num-hint'); const n = normNum(t.value);
+    clearTimeout(previewTimer);
+    if(!t.value.trim()){ hint.textContent = ''; return; }
+    if(!n){ hint.textContent = 'יש להזין מספר ריכוז בספרות בלבד'; return; }
+    const seq = ++previewSeq;
+    previewTimer = setTimeout(async () => {
+      const r = await sb.rpc('center_address', {p_num:n});
+      if(seq !== previewSeq || !document.getElementById('num-hint')) return;
+      const d = r.data;
+      hint.textContent = d && d.exists ? (d.address ? '📍 ' + d.address : 'ריכוז ' + n) : 'ריכוז לא מוגדר – הקריאה תועבר למנהל לשיוך';
+    }, 300);
+  }
+});
+
+document.addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = e.target.id;
+  try{
+    if(id === 'f-open'){
+      const num = normNum(document.getElementById('num').value);
+      const content = document.getElementById('content').value.trim();
+      const err = document.getElementById('open-err');
+      if(!num){ err.textContent = 'יש להזין מספר ריכוז'; document.getElementById('num').focus(); return; }
+      if(!content){ err.textContent = 'יש לכתוב את תוכן הקריאה'; document.getElementById('content').focus(); return; }
+      const btn = document.getElementById('open-btn'); btn.disabled = true; err.textContent = '';
+      const r = await sb.rpc('create_ticket', {p_num:num, p_content:content});
+      if(r.error){ btn.disabled = false; err.textContent = 'לא ניתן לפתוח את הקריאה כרגע. נסה שוב.'; return; }
+      lastTicket = {id:r.data.id, assigned:r.data.assigned, num}; render();
+    }
+    else if(id === 'f-login'){
+      const u = document.getElementById('lu').value.trim(), p = document.getElementById('lp').value;
+      const err = document.getElementById('login-err'); const btn = document.getElementById('login-btn');
+      if(!u || !p){ err.textContent = 'יש למלא שם משתמש וסיסמה'; return; }
+      btn.disabled = true; err.textContent = '';
+      const r = await sb.auth.signInWithPassword({email:usernameToEmail(u), password:p});
+      if(r.error){ btn.disabled = false; err.textContent = 'שם משתמש או סיסמה שגויים'; return; }
+      await loadMe();
+      if(!me){ btn.disabled = false; err.textContent = 'למשתמש הזה אין הרשאת גישה, או שהוא הושבת.'; return; }
+      location.hash = me.role==='admin' ? '#/admin' : '#/courier';
+    }
+    else if(id === 'f-center'){
+      const num = normNum(document.getElementById('c-num').value);
+      if(!num){ formErr = 'יש להזין מספר ריכוז בספרות בלבד'; render(); return; }
+      if(!editCenter && findCenter(num)){ formErr = 'ריכוז ' + num + ' כבר קיים. ניתן לערוך אותו מהרשימה.'; render(); return; }
+      const row = {
+        num,
+        address: document.getElementById('c-addr').value.trim(),
+        secretary: document.getElementById('c-sec').value.trim(),
+        phone: document.getElementById('c-phone').value.trim(),
+        courier_id: document.getElementById('c-courier').value || null
+      };
+      await run(sb.from('centers').upsert(row, {onConflict:'num'}));
+      if(row.courier_id) await run(sb.rpc('admin_claim_orphans', {p_nums:[num]}));
+      editCenter = null; formErr = ''; await reload(); toast('הריכוז נשמר');
+    }
+    else if(id === 'f-courier'){
+      const name = document.getElementById('u-name').value.trim();
+      const user = document.getElementById('u-user').value.trim().toLowerCase();
+      const pass = document.getElementById('u-pass').value;
+      if(!name || !user || !pass){ formErr = 'יש למלא שם, שם משתמש וסיסמה'; render(); return; }
+      if(!/^[a-z0-9._-]+(@[a-z0-9.-]+)?$/.test(user)){ formErr = 'שם משתמש: אותיות באנגלית קטנות, ספרות ונקודה/מקף בלבד'; render(); return; }
+      if(pass.length < 6){ formErr = 'הסיסמה חייבת להכיל לפחות 6 תווים'; render(); return; }
+      if(D.couriers.some(c => c.username === user)){ formErr = 'שם המשתמש תפוס'; render(); return; }
+      const btn = document.getElementById('u-btn'); btn.disabled = true;
+      // לקוח זמני כדי שהרשמת השליח לא תחליף את ההתחברות של המנהל
+      const tmp = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false, storageKey:'tmp-signup'}});
+      const su = await tmp.auth.signUp({email:usernameToEmail(user), password:pass});
+      if(su.error || !su.data.user || (su.data.user.identities && su.data.user.identities.length === 0)){
+        formErr = su.error ? 'יצירת המשתמש נכשלה: ' + su.error.message : 'שם המשתמש כבר קיים במערכת ההתחברות';
+        render(); return;
+      }
+      await run(sb.from('couriers').insert({user_id:su.data.user.id, name, username:user}));
+      formErr = ''; await reload(); toast('השליח נוסף');
+    }
+  }catch(err){ console.error(err); const b = document.querySelector('#u-btn, #open-btn, #login-btn'); if(b) b.disabled = false; }
+});
+
+/* ---------- Boot ---------- */
+(async function boot(){
+  if(cfgOk){
+    sb.auth.onAuthStateChange(ev => { if(ev === 'SIGNED_OUT'){ me = null; stopRealtime(); } });
+    await loadMe();
+  }
+  go();
+})();
+})();
+</script>
+</body>
+</html>
