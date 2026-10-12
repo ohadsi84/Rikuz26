@@ -223,7 +223,7 @@ function ticketCard(t, mode){
   ].join('');
   let actions = '';
   if(mode === 'courier'){
-    if(s.phone) actions += `<a class="btn sm" href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">התקשר למזכיר</a>`;
+    if(s.phone) actions += `<a class="btn sm" style="background:#FFFFFF;color:#16231D;border-color:#16231D" href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">התקשר למזכיר</a>`;
     if(t.status === 'new') actions += `<button class="btn primary sm" data-act="advance" data-id="${t.id}" data-to="progress">קיבלתי</button>`;
     if(t.status === 'progress') actions += `<button class="btn primary sm" data-act="advance" data-id="${t.id}" data-to="done">הושלמה</button>`;
   } else {
