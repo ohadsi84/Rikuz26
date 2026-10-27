@@ -217,7 +217,7 @@ function ticketCard(t, mode){
   const s = t.snapshot || {};
   const courier = t.courier_id ? courierById(t.courier_id) : null;
   const info = [
-    `<div>ריכוז <b>${esc(t.center_num)}</b>${s.address ? ' · ' + esc(s.address) : ''}</div>`,
+    `<div>ריכוז <b>${esc(t.center_num)}</b>${s.name ? ' · <b>' + esc(s.name) + '</b>' : ''}${s.address ? ' · ' + esc(s.address) : ''}</div>`,
     s.secretary ? `<div>מזכיר מתכלל: <b>${esc(s.secretary)}</b>${s.phone ? ' · <span dir="ltr">'+esc(s.phone)+'</span>' : ''}</div>` : '',
     mode==='admin' ? `<div>שליח: <b>${courier ? esc(courier.name) : 'ללא שיוך'}</b></div>` : ''
   ].join('');
@@ -335,7 +335,7 @@ function adminCenters(){
   const e = editCenter ? findCenter(editCenter) : null;
   const rows = D.centers.map(c => {
     const cr = c.courier_id ? courierById(c.courier_id) : null;
-    return `<div class="list-item"><div><b>ריכוז ${esc(c.num)}</b> <span class="muted">${esc(c.address)||'ללא כתובת'}</span>
+    return `<div class="list-item"><div><b>ריכוז ${esc(c.num)}</b>${c.name ? ' · <b>' + esc(c.name) + '</b>' : ''} <span class="muted">${esc(c.address)||'ללא כתובת'}</span>
       <div class="muted small">${c.secretary ? esc(c.secretary)+' · ' : ''}${c.phone ? '<span dir="ltr">'+esc(c.phone)+'</span> · ' : ''}שליח: ${cr ? esc(cr.name) : '<b>לא מוגדר</b>'}</div></div>
       <div class="t-actions" style="margin:0"><button class="btn sm" data-act="cedit" data-num="${esc(c.num)}">עריכה</button><button class="btn sm danger" data-act="cdel" data-num="${esc(c.num)}">מחיקה</button></div></div>`;
   }).join('');
@@ -343,6 +343,7 @@ function adminCenters(){
     <h2>${e ? 'עריכת ריכוז '+esc(e.num) : 'הוספת ריכוז'}</h2>
     <div class="row">
       <div class="field"><label for="c-num">מספר ריכוז</label><input id="c-num" type="text" inputmode="numeric" value="${e?esc(e.num):''}" ${e?'readonly':''}></div>
+      <div class="field"><label for="c-name">שם ריכוז</label><input id="c-name" type="text" value="${e?esc(e.name):''}"></div>
       <div class="field"><label for="c-addr">כתובת</label><input id="c-addr" type="text" value="${e?esc(e.address):''}"></div>
       <div class="field"><label for="c-sec">מזכיר מתכלל</label><input id="c-sec" type="text" value="${e?esc(e.secretary):''}"></div>
       <div class="field"><label for="c-phone">נייד מזכיר</label><input id="c-phone" type="tel" dir="ltr" style="text-align:right" value="${e?esc(e.phone):''}"></div>
@@ -412,6 +413,7 @@ function detectCol(h){
   if(/שליח|courier|driver/.test(x)) return 'courier';
   if(/כתובת|address|רחוב/.test(x)) return 'address';
   if(/טלפון|נייד|פלאפון|סלולר|phone|mobile|tel|cell/.test(x)) return 'phone';
+  if(/שם(ה)?ריכוז|ריכוז.*שם|centername|centrename/.test(x)) return 'name';
   if(/מזכיר|secretary|שם/.test(x)) return 'secretary';
   if(/ריכוז|מספר|מס|num|center|id/.test(x)) return 'num';
   return null;
@@ -448,9 +450,9 @@ function buildImport(grid0){
   }
   if(start === 0){            // אין שורת כותרות מזוהה: סדר ברירת מחדל מספר, מזכיר, טלפון, כתובת
     const width = Math.max(0, ...grid.map(x => x.r.length));
-    Object.entries({num:0, secretary:1, phone:2, address:3}).forEach(([k,i]) => { if(i < width) map[k] = i; });
+    Object.entries({num:0, secretary:1, phone:2, address:3, name:4}).forEach(([k,i]) => { if(i < width) map[k] = i; });
   }
-  const has = {secretary:'secretary' in map, phone:'phone' in map, address:'address' in map, courier:'courier' in map};
+  const has = {name:'name' in map, secretary:'secretary' in map, phone:'phone' in map, address:'address' in map, courier:'courier' in map};
   const unmatched = new Set();
   const byNum = new Map(), skipped = []; let dupes = 0;
   grid.slice(start).forEach(({r, line}) => {
@@ -460,6 +462,7 @@ function buildImport(grid0){
     if(byNum.has(num)) dupes++;
     byNum.set(num, {
       num,
+      name:      has.name ? String(r[map.name] ?? '').trim() : '',
       secretary: has.secretary ? String(r[map.secretary] ?? '').trim() : '',
       phone:     has.phone ? normPhone(r[map.phone]) : '',
       address:   has.address ? String(r[map.address] ?? '').trim() : '',
@@ -499,17 +502,17 @@ async function handleImport(file){
 }
 function importPanel(){
   const head = `<div class="panel"><h2>ייבוא ריכוזים מקובץ</h2>
-    <p class="small muted">קובץ Excel (xlsx) או CSV, כשהשורה הראשונה היא כותרות: מספר ריכוז, שם מזכיר מתכלל, נייד מזכיר, כתובת ושליח (לא חובה; לפי השם או שם המשתמש של השליח). ריכוז שכבר קיים יתעדכן; שליח משתנה רק אם צוין בקובץ.</p>
+    <p class="small muted">קובץ Excel (xlsx) או CSV, כשהשורה הראשונה היא כותרות: מספר ריכוז, שם ריכוז, שם מזכיר מתכלל, נייד מזכיר, כתובת ושליח (לא חובה; לפי השם או שם המשתמש של השליח). ריכוז שכבר קיים יתעדכן; שליח משתנה רק אם צוין בקובץ.</p>
     <div class="t-actions" style="margin-top:0"><input type="file" id="imp-file" accept=".xlsx,.xls,.csv,.txt" style="max-width:340px" aria-label="בחירת קובץ"><button class="btn sm" type="button" data-act="template">הורדת קובץ לדוגמה</button></div>`;
   if(!imp) return head + '</div>';
-  const cols = ['מספר ריכוז'].concat(imp.has.secretary?['מזכיר']:[], imp.has.phone?['נייד']:[], imp.has.address?['כתובת']:[], imp.has.courier?['שליח']:[]).join(', ');
+  const cols = ['מספר ריכוז'].concat(imp.has.name?['שם ריכוז']:[], imp.has.secretary?['מזכיר']:[], imp.has.phone?['נייד']:[], imp.has.address?['כתובת']:[], imp.has.courier?['שליח']:[]).join(', ');
   return head + `<div style="margin-top:16px"><p><b>${imp.rows.length}</b> ריכוזים בקובץ: ${imp.newCount} חדשים, ${imp.updCount} יתעדכנו.
     <span class="muted small">עמודות שזוהו: ${esc(cols)}. עמודה שלא קיימת בקובץ לא תשנה נתונים קיימים.</span></p>
     ${imp.dupes ? `<p class="small muted">${imp.dupes} מספרי ריכוז הופיעו יותר מפעם אחת; נלקחה השורה האחרונה.</p>` : ''}
     ${imp.unmatched.length ? `<p class="err">שליחים שלא נמצאו במערכת (השיוך שלהם לא ישתנה): ${esc(imp.unmatched.join(', '))}. יש להוסיף אותם בלשונית "שליחים" ולייבא שוב.</p>` : ''}
     ${imp.skipped.length ? `<p class="err">שורות שדולגו (אין מספר ריכוז תקין): ${esc(imp.skipped.slice(0,20).join(', '))}${imp.skipped.length>20?'…':''}</p>` : ''}
-    <div style="overflow-x:auto;max-height:340px;overflow-y:auto"><table class="tbl"><thead><tr><th>ריכוז</th><th>מזכיר</th><th>נייד</th><th>כתובת</th>${imp.has.courier?'<th>שליח</th>':''}<th></th></tr></thead><tbody>
-    ${imp.rows.map(r=>`<tr><td>${esc(r.num)}</td><td>${esc(r.secretary)}</td><td dir="ltr" style="text-align:right">${esc(r.phone)}</td><td>${esc(r.address)}</td>${imp.has.courier?`<td>${r.courierId?esc(courierById(r.courierId).name):''}</td>`:''}<td>${findCenter(r.num)?'עדכון':'<b>חדש</b>'}</td></tr>`).join('')}
+    <div style="overflow-x:auto;max-height:340px;overflow-y:auto"><table class="tbl"><thead><tr><th>ריכוז</th>${imp.has.name?'<th>שם ריכוז</th>':''}<th>מזכיר</th><th>נייד</th><th>כתובת</th>${imp.has.courier?'<th>שליח</th>':''}<th></th></tr></thead><tbody>
+    ${imp.rows.map(r=>`<tr><td>${esc(r.num)}</td>${imp.has.name?`<td>${esc(r.name)}</td>`:''}<td>${esc(r.secretary)}</td><td dir="ltr" style="text-align:right">${esc(r.phone)}</td><td>${esc(r.address)}</td>${imp.has.courier?`<td>${r.courierId?esc(courierById(r.courierId).name):''}</td>`:''}<td>${findCenter(r.num)?'עדכון':'<b>חדש</b>'}</td></tr>`).join('')}
     </tbody></table></div>
     <div class="t-actions"><button class="btn primary" data-act="imp-confirm">ייבוא ${imp.rows.length} ריכוזים</button><button class="btn" data-act="imp-cancel">ביטול</button></div></div></div>`;
 }
@@ -550,7 +553,7 @@ document.addEventListener('click', async e => {
         await reload(); toast(b.dataset.to==='done' ? 'הקריאה הושלמה ועברה להיסטוריה' : 'הקריאה בטיפול');
         break;
       case 'template': {
-        const csv = '\uFEFF' + 'מספר ריכוז,שם מזכיר מתכלל,נייד מזכיר,כתובת\n101,ישראל ישראלי,050-1234567,"הרצל 15, נתניה"\n102,רונית בן דוד,052-7654321,"ויצמן 8, נתניה"\n';
+        const csv = '\uFEFF' + 'מספר ריכוז,שם ריכוז,שם מזכיר מתכלל,נייד מזכיר,כתובת\n101,בית ספר אורט,ישראל ישראלי,050-1234567,"הרצל 15, נתניה"\n102,מתנ""ס מרכזי,רונית בן דוד,052-7654321,"ויצמן 8, נתניה"\n';
         const link = document.createElement('a');
         link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
         link.download = 'rikuzim-template.csv'; link.click();
@@ -561,7 +564,7 @@ document.addEventListener('click', async e => {
       case 'imp-confirm': {
         b.disabled = true;
         const rows = imp.rows.map(r => {
-          const o = {num:r.num}; ['secretary','phone','address'].forEach(k => { if(imp.has[k]) o[k] = r[k]; });
+          const o = {num:r.num}; ['name','secretary','phone','address'].forEach(k => { if(imp.has[k]) o[k] = r[k]; });
           if(imp.has.courier){ const ex = findCenter(r.num); o.courier_id = r.courierId || (ex ? ex.courier_id : null); }
           return o;
         });
@@ -634,7 +637,7 @@ document.addEventListener('input', e => {
       const r = await sb.rpc('center_address', {p_num:n});
       if(seq !== previewSeq || !document.getElementById('num-hint')) return;
       const d = r.data;
-      hint.textContent = d && d.exists ? (d.address ? '📍 ' + d.address : 'ריכוז ' + n) : 'ריכוז לא מוגדר – הקריאה תועבר למנהל לשיוך';
+      hint.textContent = d && d.exists ? ([d.name, d.address].filter(Boolean).join(' · ') ? '📍 ' + [d.name, d.address].filter(Boolean).join(' · ') : 'ריכוז ' + n) : 'ריכוז לא מוגדר – הקריאה תועבר למנהל לשיוך';
     }, 300);
   }
 });
@@ -671,6 +674,7 @@ document.addEventListener('submit', async e => {
       if(!editCenter && findCenter(num)){ formErr = 'ריכוז ' + num + ' כבר קיים. ניתן לערוך אותו מהרשימה.'; render(); return; }
       const row = {
         num,
+        name: document.getElementById('c-name').value.trim(),
         address: document.getElementById('c-addr').value.trim(),
         secretary: document.getElementById('c-sec').value.trim(),
         phone: document.getElementById('c-phone').value.trim(),
