@@ -241,7 +241,7 @@ function ticketCard(t, mode){
   ].join('');
   let actions = '';
   if(mode === 'courier'){
-    cts.filter(x => x.phone).forEach(x => { actions += `<a class="btn sm" style="background:#FFFFFF;color:#16231D;border-color:#16231D" href="tel:${esc(String(x.phone).replace(/[^\d+]/g,''))}">${cts.length > 1 ? 'התקשר – ' + esc(x.name || x.phone) : 'התקשר למזכיר'}</a>`; });
+    cts.filter(x => x.phone).forEach(x => { actions += `<a class="btn sm" style="background:#FFFFFF;color:#16231D;border-color:#16231D" href="tel:${esc(String(x.phone).replace(/[^\d+]/g,''))}">${x.name ? 'התקשר ל' + esc(x.name) : (cts.length > 1 ? 'התקשר – ' + esc(x.phone) : 'התקשר למזכיר')}</a>`; });
     if(t.status === 'new') actions += `<button class="btn primary sm" data-act="advance" data-id="${t.id}" data-to="progress">קיבלתי</button>`;
     if(t.status === 'progress') actions += `<button class="btn primary sm" data-act="advance" data-id="${t.id}" data-to="done">הושלמה</button>`;
   } else {
